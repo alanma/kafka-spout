@@ -16,43 +16,18 @@
 
 package nl.minvenj.nfi.storm.kafka.util;
 
-import static nl.minvenj.nfi.storm.kafka.util.ConfigUtils.CONFIG_BUFFER_MAX_MESSAGES;
-import static nl.minvenj.nfi.storm.kafka.util.ConfigUtils.CONFIG_FILE;
-import static nl.minvenj.nfi.storm.kafka.util.ConfigUtils.CONFIG_GROUP;
-import static nl.minvenj.nfi.storm.kafka.util.ConfigUtils.CONFIG_TOPIC;
-import static nl.minvenj.nfi.storm.kafka.util.ConfigUtils.DEFAULT_BUFFER_MAX_MESSAGES;
-import static nl.minvenj.nfi.storm.kafka.util.ConfigUtils.DEFAULT_GROUP;
-import static nl.minvenj.nfi.storm.kafka.util.ConfigUtils.DEFAULT_TOPIC;
-import static nl.minvenj.nfi.storm.kafka.util.ConfigUtils.checkConfigSanity;
-import static nl.minvenj.nfi.storm.kafka.util.ConfigUtils.configFromPrefix;
-import static nl.minvenj.nfi.storm.kafka.util.ConfigUtils.configFromResource;
-import static nl.minvenj.nfi.storm.kafka.util.ConfigUtils.createFailHandlerFromString;
-import static nl.minvenj.nfi.storm.kafka.util.ConfigUtils.createKafkaConfig;
-import static nl.minvenj.nfi.storm.kafka.util.ConfigUtils.getMaxBufSize;
-import static nl.minvenj.nfi.storm.kafka.util.ConfigUtils.getStormZookeepers;
-import static nl.minvenj.nfi.storm.kafka.util.ConfigUtils.getTopic;
-
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import org.junit.Test;
-
 import backtype.storm.Config;
 import nl.minvenj.nfi.storm.kafka.fail.AbstractFailHandler;
 import nl.minvenj.nfi.storm.kafka.fail.FailHandler;
 import nl.minvenj.nfi.storm.kafka.fail.ReliableFailHandler;
 import nl.minvenj.nfi.storm.kafka.fail.UnreliableFailHandler;
+import org.junit.Test;
+
+import java.util.*;
+
+import static nl.minvenj.nfi.storm.kafka.util.ConfigUtils.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.*;
 
 public class ConfigUtilsTest {
     @Test
@@ -72,7 +47,7 @@ public class ConfigUtilsTest {
 
         // assert the values in the kafka-config file are present and have been read correctly
         assertEquals("non-existent.host:2181", config.getProperty("zookeeper.connect"));
-        assertEquals("100", config.getProperty("consumer.timeout.ms"));
+        assertEquals("10000", config.getProperty("consumer.timeout.ms"));
     }
 
     @Test
