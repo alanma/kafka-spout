@@ -46,7 +46,7 @@ public class ConfigUtilsTest {
         final Properties config = createKafkaConfig(stormConfig);
 
         // assert the values in the kafka-config file are present and have been read correctly
-        assertEquals("non-existent.host:2181", config.getProperty("zookeeper.connect"));
+        assertEquals("192.168.86.5:2181", config.getProperty("zookeeper.connect"));
         assertEquals("10000", config.getProperty("consumer.timeout.ms"));
     }
 

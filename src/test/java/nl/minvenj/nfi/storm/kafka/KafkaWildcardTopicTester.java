@@ -34,7 +34,7 @@ public class KafkaWildcardTopicTester {
         ConsumerConnector connector =
                 Consumer.createJavaConsumerConnector(config);   // ... (2)
 
-        String regex = "max?\\w+";
+        String regex = "m?\\w+";
         TopicFilter topicFilter = new Whitelist(regex);        // ... (3)
 
         List<KafkaStream<byte[], byte[]>> streams =

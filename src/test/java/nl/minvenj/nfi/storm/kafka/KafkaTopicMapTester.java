@@ -35,7 +35,7 @@ public class KafkaTopicMapTester {
         Map<String, Integer> topicCountMap =
                 new HashMap<String, Integer>();  // ... (3)
         topicCountMap.put("max019", 3);
-        topicCountMap.put("anotherTopic", 3);
+        topicCountMap.put("mickey2015", 3);
 
         Map<String, List<KafkaStream<byte[], byte[]>>> messageStreamMap =
                 connector.createMessageStreams(topicCountMap); // ... (4)
