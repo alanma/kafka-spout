@@ -8,12 +8,14 @@ import kafka.utils.VerifiableProperties;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Describe...
  *
- * @author <a href="mailto:alan.ma@disney.com">Alan Ma</a>
+ * @author <a href="mailto:alan.ma@ymail.com">Alan Ma</a>
  * @version 1.0
  */
 public class KafkaWildcardTopicTester {
@@ -26,36 +28,29 @@ public class KafkaWildcardTopicTester {
 //        InputStream in = new FileInputStream(
 //                new File("kafka-config.properties"));
         InputStream in = KafkaWildcardTopicTester.class.getClassLoader()
-               .getResourceAsStream("kafka-config.properties"); // ... (1)
+                .getResourceAsStream("kafka-config.properties"); // ... (1)
         props.load(in);
-        ConsumerConfig config =   new ConsumerConfig(props);
+        ConsumerConfig config = new ConsumerConfig(props);
         ConsumerConnector connector =
                 Consumer.createJavaConsumerConnector(config);   // ... (2)
-
-        Map<String, Integer> topicCountMap =
-                new HashMap<String, Integer>();  // ... (3)
-        topicCountMap.put("max019", 3);
-        topicCountMap.put("Deutsch", 3);
-//        Map<String, List<KafkaStream<byte[], byte[]>>> messageStreamMap =
-//                connector.createMessageStreams(topicCountMap);
 
         String regex = "max?\\w+";
         TopicFilter topicFilter = new Whitelist(regex);        // ... (3)
 
         List<KafkaStream<byte[], byte[]>> streams =
                 connector.createMessageStreamsByFilter(topicFilter, 1);       // ... (4)
-        for(KafkaStream<byte[], byte[]> stream: streams) {
+        for (KafkaStream<byte[], byte[]> stream : streams) {
             final ConsumerIterator<byte[], byte[]> iterator = stream.iterator();
             Thread thread = new Thread(                               // ... (5)
                     new Runnable() {
                         @Override
                         public void run() {
                             StringDecoder decoder = new StringDecoder(new VerifiableProperties());
-                            while(iterator.hasNext()) {                   // ... (6)
+                            while (iterator.hasNext()) {                   // ... (6)
                                 MessageAndMetadata<byte[], byte[]> messageAndMetaData =
                                         iterator.next();
                                 System.out.println("consumed: " +
-                                        "topic=["  +
+                                        "topic=[" +
                                         messageAndMetaData.topic() + "] " +
                                         "message=[" +
                                         decoder.fromBytes(
@@ -67,7 +62,7 @@ public class KafkaWildcardTopicTester {
             threads.add(thread);
         }
 
-        for (Thread thread: threads) {                                // ... (7)
+        for (Thread thread : threads) {                                // ... (7)
             thread.join();
         }
 

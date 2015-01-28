@@ -15,7 +15,7 @@ import java.util.*;
 /**
  * Describe...
  *
- * @author <a href="mailto:alan.ma@disney.com">Alan Ma</a>
+ * @author <a href="mailto:alan.ma@ymail.com">Alan Ma</a>
  * @version 1.0
  */
 public class KafkaTopicMapTester {
@@ -26,33 +26,34 @@ public class KafkaTopicMapTester {
 
         Properties props = new Properties();
         InputStream in = KafkaTopicMapTester.class.getClassLoader()
-               .getResourceAsStream("kafka-config.properties"); // ... (1)
+                .getResourceAsStream("kafka-config.properties"); // ... (1)
         props.load(in);
-        final ConsumerConfig config =   new ConsumerConfig(props);
+        final ConsumerConfig config = new ConsumerConfig(props);
         ConsumerConnector connector =
                 Consumer.createJavaConsumerConnector(config);   // ... (2)
 
         Map<String, Integer> topicCountMap =
                 new HashMap<String, Integer>();  // ... (3)
         topicCountMap.put("max019", 3);
-        topicCountMap.put("Deutsch", 3);
-       Map<String, List<KafkaStream<byte[], byte[]>>> messageStreamMap =
-        connector.createMessageStreams(topicCountMap); // ... (4)
+        topicCountMap.put("anotherTopic", 3);
+
+        Map<String, List<KafkaStream<byte[], byte[]>>> messageStreamMap =
+                connector.createMessageStreams(topicCountMap); // ... (4)
         for (Map.Entry<String, List<KafkaStream<byte[], byte[]>>> entry :
                 messageStreamMap.entrySet()) {
             List<KafkaStream<byte[], byte[]>> streams = entry.getValue();
-            for(KafkaStream<byte[], byte[]> stream: streams) {
+            for (KafkaStream<byte[], byte[]> stream : streams) {
                 final ConsumerIterator<byte[], byte[]> messages = stream.iterator();
                 Thread thread = new Thread(                               // ... (5)
                         new Runnable() {
                             @Override
                             public void run() {
                                 StringDecoder decoder = new StringDecoder(config.props());
-                                while(messages.hasNext()) {                   // ... (6)
+                                while (messages.hasNext()) {                   // ... (6)
                                     MessageAndMetadata<byte[], byte[]>
                                             messageAndMetaData = messages.next();
                                     System.out.println("consumed: " +
-                                            "topic=["  +
+                                            "topic=[" +
                                             messageAndMetaData.topic() + "] " +
                                             "message=[" +
                                             decoder.fromBytes(
@@ -65,7 +66,7 @@ public class KafkaTopicMapTester {
             }
         }
 
-        for (Thread thread: threads) {                                // ... (7)
+        for (Thread thread : threads) {                                // ... (7)
             thread.join();
         }
 
