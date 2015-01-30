@@ -16,41 +16,24 @@
 
 package nl.minvenj.nfi.storm.kafka;
 
-import static nl.minvenj.nfi.storm.kafka.util.ConfigUtils.CONFIG_FAIL_HANDLER;
-import static nl.minvenj.nfi.storm.kafka.util.ConfigUtils.DEFAULT_FAIL_HANDLER;
-import static nl.minvenj.nfi.storm.kafka.util.ConfigUtils.createFailHandlerFromString;
-import static nl.minvenj.nfi.storm.kafka.util.ConfigUtils.createKafkaConfig;
-import static nl.minvenj.nfi.storm.kafka.util.ConfigUtils.getMaxBufSize;
-import static nl.minvenj.nfi.storm.kafka.util.ConfigUtils.getTopic;
-
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Queue;
-import java.util.SortedMap;
-import java.util.TreeMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import backtype.storm.spout.RawScheme;
 import backtype.storm.spout.Scheme;
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.OutputFieldsDeclarer;
-import kafka.consumer.Consumer;
-import kafka.consumer.ConsumerConfig;
-import kafka.consumer.ConsumerIterator;
-import kafka.consumer.ConsumerTimeoutException;
-import kafka.consumer.KafkaStream;
+import kafka.consumer.*;
 import kafka.javaapi.consumer.ConsumerConnector;
 import kafka.message.MessageAndMetadata;
 import nl.minvenj.nfi.storm.kafka.fail.FailHandler;
 import nl.minvenj.nfi.storm.kafka.util.ConfigUtils;
 import nl.minvenj.nfi.storm.kafka.util.KafkaMessageId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.*;
+
+import static nl.minvenj.nfi.storm.kafka.util.ConfigUtils.*;
 
 /**
  * Storm spout reading messages from kafka, emitting them as single field tuples.
@@ -95,7 +78,7 @@ public class KafkaSpout implements IRichSpout {
     protected String _topic;
     protected int _bufSize;
     protected FailHandler _failHandler;
-    protected ConsumerIterator<byte[], byte[]> _iterator;
+    protected ConsumerIterator<byte[], byte[]> _consumerIterator;
     protected transient SpoutOutputCollector _collector;
     protected transient ConsumerConnector _consumer;
 
@@ -184,18 +167,19 @@ public class KafkaSpout implements IRichSpout {
             throw new IllegalStateException("cannot fill buffer when buffer or pending messages are non-empty");
         }
 
-        if (_iterator == null) {
+        if (_consumerIterator == null) {
             // create a stream of messages from _consumer using the streams as defined on construction
-            final Map<String, List<KafkaStream<byte[], byte[]>>> streams = _consumer.createMessageStreams(Collections.singletonMap(_topic, 1));
-            _iterator = streams.get(_topic).get(0).iterator();
+            final Map<String, List<KafkaStream<byte[], byte[]>>> streams =
+                    _consumer.createMessageStreams(Collections.singletonMap(_topic, 1));
+            _consumerIterator = streams.get(_topic).get(0).iterator();
         }
 
         // We'll iterate the stream in a try-clause; kafka stream will poll its client channel for the next message,
         // throwing a ConsumerTimeoutException when the configured timeout is exceeded.
         try {
             int size = 0;
-            while (size < _bufSize && _iterator.hasNext()) {
-                final MessageAndMetadata<byte[], byte[]> message = _iterator.next();
+            while (size < _bufSize && _consumerIterator.hasNext()) {
+                final MessageAndMetadata<byte[], byte[]> message = _consumerIterator.next();
                 final KafkaMessageId id = new KafkaMessageId(message.partition(), message.offset());
                 _inProgress.put(id, message.message());
                 size++;
@@ -255,7 +239,7 @@ public class KafkaSpout implements IRichSpout {
     public void close() {
         // reset state by setting members to null
         _collector = null;
-        _iterator = null;
+        _consumerIterator = null;
 
         if (_consumer != null) {
             try {

@@ -32,10 +32,10 @@ public class KafkaTopicMapTester {
         ConsumerConnector connector =
                 Consumer.createJavaConsumerConnector(config);   // ... (2)
 
-        Map<String, Integer> topicCountMap =
-                new HashMap<String, Integer>();  // ... (3)
-        topicCountMap.put("max019", 3);
-        topicCountMap.put("mickey2015", 3);
+        int numOfThereads = 2; //conf.getNumOfThreads();
+        Map<String, Integer> topicCountMap = new HashMap<String, Integer>(); // ... (3)
+        topicCountMap.put("max019", numOfThereads);
+        topicCountMap.put("mickey2015", numOfThereads);
 
         Map<String, List<KafkaStream<byte[], byte[]>>> messageStreamMap =
                 connector.createMessageStreams(topicCountMap); // ... (4)
